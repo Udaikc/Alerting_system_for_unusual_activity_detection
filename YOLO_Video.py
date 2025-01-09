@@ -1,25 +1,29 @@
 from ultralytics import YOLO
 import cv2
 import math
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 #from twilio.rest import Client
 
 # Twilio credentials (store securely in production)
-"""account_sid = ''
-auth_token = ''
-from_number = ''
-to_number = ''
-bin_url = ''
-
-client = Client(account_sid, auth_token)
-
+account_sid = os.getenv("TWILIO_ACCOUNT_SID")
+auth_token = os.getenv("TWILIO_AUTH_TOKEN")
+from_number = os.getenv("TWILIO_FROM_NUMBER")
+to_number = os.getenv("TWILIO_TO_NUMBER")
+bin_url = os.getenv("TWILIO_BIN_URL")
 
 def make_call():
+    from twilio.rest import Client
+
+    client = Client(account_sid, auth_token)
     call = client.calls.create(
         to=to_number,
         from_=from_number,
         url=bin_url
     )
-    print(f"Call initiated, SID: {call.sid}")"""
+    print(f"Call initiated, SID: {call.sid}")
 
 
 def video_detection(path_x):
@@ -63,7 +67,7 @@ def video_detection(path_x):
 
                     # Trigger call for specific labels
                     if class_name in ['fire', 'knife', 'pistol']:
-                        pass
+                        make_call()
 
         yield img
 
