@@ -5,9 +5,8 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()
-#from twilio.rest import Client
 
-# Twilio credentials (store securely in production)
+# Twilio credentials
 account_sid = os.getenv("TWILIO_ACCOUNT_SID")
 auth_token = os.getenv("TWILIO_AUTH_TOKEN")
 from_number = os.getenv("TWILIO_FROM_NUMBER")
@@ -25,14 +24,10 @@ def make_call():
     )
     print(f"Call initiated, SID: {call.sid}")
 
-
 def video_detection(path_x):
     video_capture = path_x
     # Create a Webcam Object
     cap = cv2.VideoCapture(video_capture)
-    frame_width = int(cap.get(3))
-    frame_height = int(cap.get(4))
-
     model = YOLO("YOLO-Weights/best.pt")
     classNames = ['Balaclava', 'fire', 'knife', 'pistol', 'smoke']
     colors = {
@@ -45,6 +40,10 @@ def video_detection(path_x):
 
     while True:
         success, img = cap.read()
+        if not success:
+            print("Failed to read frame from video capture.")
+            break  # Exit the loop if frames cannot be read
+
         results = model(img, stream=True)
         for r in results:
             boxes = r.boxes
@@ -69,7 +68,10 @@ def video_detection(path_x):
                     if class_name in ['fire', 'knife', 'pistol']:
                         make_call()
 
-        yield img
-
+        # Check if img is valid before yielding
+        if img is not None and not img.empty():
+            yield img
+        else:
+            print("Detected empty image.")
 
 cv2.destroyAllWindows()
